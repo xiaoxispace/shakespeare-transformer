@@ -94,6 +94,20 @@ class CharTokenizer():
     return tokens
 
 
+def display_token(token):
+  """Normalize displayed tokens on frequency figures"""
+  if token == " ":
+    return "<space>"
+  elif token == "\n":
+    return "<newline>"
+  elif token == "\t":
+    return "<tab>"
+  elif token == "\r":
+    return "<return>"
+  else:
+    return token
+
+
 def plot_token_counts(token_counts, num_random=15):
   # -------------------------
   # 1. Top 15 most frequent words
@@ -104,7 +118,7 @@ def plot_token_counts(token_counts, num_random=15):
     reverse=True
   )[:15]
   counts = [count for _, count in tokens]
-  tokens = [token for token, _ in tokens]
+  tokens = [display_token(token) for token, _ in tokens]
 
   plt.figure(figsize=(12, 5))
   plt.bar(tokens, counts)
@@ -122,7 +136,7 @@ def plot_token_counts(token_counts, num_random=15):
   num_random = min(num_random, len(token_counts))
 
   sampled_tokens = random.sample(
-    list(token_counts.keys()),
+    [display_token(token) for token in token_counts.keys()],
     num_random
   )
 
@@ -163,7 +177,7 @@ def main():
   counts = torch.tensor(list(token_counts.values()), dtype=torch.int32)
   print("Summary statistics:")
   print(f"Token number: {len(token_counts)}")
-  print(f"Corpuse character count: 2242619")
+  print(f"Corpuse character count: {len(tokens)}")
   print("Tokens appearing once:", (counts == 1).sum())
   print("Tokens appearing <= 5:", (counts <= 5).sum())
   print("Tokens appearing <= 10:", (counts <= 10).sum())
