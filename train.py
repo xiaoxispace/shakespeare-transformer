@@ -9,7 +9,8 @@ import wandb
 from tqdm import tqdm
 from pathlib import Path
 
-from dataset import LanguageModelingDataset, prepare_dataset_loader
+from dataset import prepare_dataset_loader
+from hyperparams import *
 from models.transformer import Transformer
 
 
@@ -18,6 +19,7 @@ def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, devi
   # Training loop
   train_loss_history = []
   test_loss_history = []
+  val_loss_history = []
   epoch_sequence = []
 
   for epoch in range(epochs):
@@ -45,8 +47,8 @@ def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, devi
     log_registry['train_loss'] = training_loss / len(train_loader.dataset)
 
     # testing
-    test_loss = 0.0    
     with torch.no_grad():
+      test_loss = 0.0
       model.eval()
       for batch in test_loader:
         inputs, labels = batch[0].contiguous(), batch[1].contiguous()
@@ -58,8 +60,23 @@ def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, devi
 
         loss = criterion(logits, labels)  # Compute the loss
         test_loss += loss.item() * B
+      
+      val_loss = 0.0
+      for batch in val_loader:
+        inputs, labels = batch[0].contiguous(), batch[1].contiguous()
+        inputs, labels = inputs.to(device), labels.to(device)
+        logits = model(inputs, None)  # Forward pass: (B, T, Emb)
+        B, T, C = logits.shape
+        logits = logits.view(B * T, C)
+        labels = labels.view(B * T)
+
+        loss = criterion(logits, labels)  # Compute the loss
+        val_loss += loss.item() * B
+
     test_loss_history.append(test_loss / len(test_loader.dataset))
     log_registry['test_loss'] = test_loss / len(test_loader.dataset)
+    val_loss_history.append(val_loss / len(val_loader.dataset))
+    log_registry['val_loss'] = val_loss / len(val_loader.dataset)
     wandb.log(log_registry)
 
     epoch_sequence.append(epoch + 1)
@@ -71,7 +88,7 @@ def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, devi
       torch.save(model.state_dict(), f'./data/model-{epoch}.pth')
 
   print('Training complete!')
-  
+
   return model 
 
 if __name__ == "__main__":
@@ -86,17 +103,6 @@ if __name__ == "__main__":
 
   train_end = 0.7
   val_end = 0.9
-
-  block_size = 64
-  batch_size = 256
-  dmodel = 256 
-  learning_rate = 0.00001
-  cuda_available = torch.cuda.is_available()
-  dropout = 0.1
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  num_of_decoder_layers=3
-  num_of_encoder_layers=3
-  num_of_heads=4
 
   if enable_wandb:
     wandb.init(
@@ -122,13 +128,10 @@ if __name__ == "__main__":
   print("Epochs: ", epochs)
 
   token_dataset_path = Path("data/token_dataset.pt")
-  vocab_to_ind_path = Path("data/vocab_to_ind.json")
-  token_count_path = Path("data/token_count.json")
-
-  with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
-    token_sequence = torch.load(token_dataset_path)
+  token_sequence = torch.load(token_dataset_path)
   token_sequence = torch.tensor(token_sequence, dtype=torch.long)
 
+  vocab_to_ind_path = Path("data/vocab_to_ind.json")
   with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
     vocab_to_ind = json.load(file)
   ind_to_vocab = {v: k for k, v in vocab_to_ind.items()}
@@ -143,7 +146,7 @@ if __name__ == "__main__":
     num_of_encoder_layers,
     num_of_decoder_layers,
     num_of_heads,
-    decoder_only=True
+    decoder_only=decoder_only
   ).to(device)
 
   criterion = nn.CrossEntropyLoss()
