@@ -1,6 +1,7 @@
 
 import argparse
 import json
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -14,7 +15,54 @@ from hyperparams import *
 from models.transformer import Transformer
 
 
-def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, device='cuda'):
+def make_model_saver(config, run_name=None, save_dir="checkpoints"):
+    def save_model(model, epoch):
+      if model.decoder_only:
+        filename = (
+          f"{config['model_type']}"
+          f"_ctx{config['block_size']}"
+          f"_d{config['dmodel']}"
+          f"_L{config['num_of_decoder_layers']}"
+          f"_H{config['num_heads']}"
+          f"_lr{config['learning_rate']:.0e}"
+          f"_dropout{config['dropout']:.0e}"
+          f"_e{epoch}.pth"
+        )
+      else:
+        filename = (
+          f"{config['model_type']}"
+          f"_ctx{config['block_size']}"
+          f"_d{config['dmodel']}"
+          f"_dcdr{config['num_of_decoder_layers']}"
+          f"_ecdr{config['num_of_encoder_layers']}"
+          f"_H{config['num_heads']}"
+          f"_lr{config['learning_rate']:.0e}"
+          f"_dropout{config['dropout']:.0e}"
+          f"_e{epoch}.pth"
+        )
+
+      if run_name:
+        run_dir = os.path.join(save_dir, run_name)
+        os.makedirs(run_dir, exist_ok=True)
+        path = os.path.join(run_dir, filename)
+      else:
+        path = os.path.join(save_dir, filename)
+      torch.save(model.state_dict(), path)
+      print(f"Model saved to {path}")
+
+    return save_model
+
+
+def train(
+    model,
+    train_loader,
+    test_loader,
+    criterion,
+    optimizer,
+    epochs=1,
+    device='cuda',
+    save_model_fn=None
+  ):
   # Define loss function and optimizer
   # Training loop
   train_loss_history = []
@@ -85,11 +133,14 @@ def train(model, train_loader, test_loader, criterion, optimizer, epochs=1, devi
 
     if epoch % 5 == 0 or epoch == epochs-1:
       # Save the model
-      torch.save(model.state_dict(), f'./data/model-{epoch}.pth')
+      if save_model_fn is None:
+        torch.save(model.state_dict(), os.path.join("checkpoints", f"model-{epoch}.pth"))
+      else:
+        save_model_fn(model, epoch)
 
   print('Training complete!')
 
-  return model 
+  return model
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
@@ -103,6 +154,17 @@ if __name__ == "__main__":
 
   train_end = 0.7
   val_end = 0.9
+
+  block_size = config['block_size']
+  batch_size = config['batch_size']
+  decoder_only = config['decoder_only']
+  num_of_encoder_layers = config['num_of_encoder_layers']
+  num_of_decoder_layers = config['num_of_decoder_layers']
+  num_of_heads = config['num_of_heads']
+  dmodel = config['dmodel']
+  dropout = config['dropout']
+  learning_rate = config['learning_rate']
+  device = config['device']
 
   if enable_wandb:
     wandb.init(
@@ -118,9 +180,11 @@ if __name__ == "__main__":
         "dropout": dropout,
       }
     )
+    run_name = wandb.run.name
   else:
-      print("Disable wandb")
-      wandb.init(mode="disabled")
+    print("Disable wandb")
+    wandb.init(mode="disabled")
+    run_name = None
 
   print("Hello World!")
   print("CUDA available: ", torch.cuda.is_available())
@@ -158,7 +222,8 @@ if __name__ == "__main__":
     criterion,
     optimizer,
     epochs=epochs,
-    device=device
+    device=device,
+    save_model_fn=make_model_saver(config, run_name=run_name)
   )
 
 

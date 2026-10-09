@@ -19,6 +19,17 @@ if __name__ == "__main__":
   length = parser.length
   start = parser.start
 
+  block_size = config['block_size']
+  batch_size = config['batch_size']
+  decoder_only = config['decoder_only']
+  num_of_encoder_layers = config['num_of_encoder_layers']
+  num_of_decoder_layers = config['num_of_decoder_layers']
+  num_of_heads = config['num_of_heads']
+  dmodel = config['dmodel']
+  dropout = config['dropout']
+  learning_rate = config['learning_rate']
+  device = config['device']
+
   print("Loading vocab ...")
   token_dataset_path = Path("data/token_dataset.pt")
   vocab_to_ind_path = Path("data/vocab_to_ind.json")
@@ -66,5 +77,4 @@ if __name__ == "__main__":
       output = torch.multinomial(output, num_samples=1)
       token_indx.append(output.item())
       print(ind_to_vocab[output.item()], end='')
-  # generate_contents(model, vocab_to_ind, ind_to_vocab=ind_to_vocab, device=device, max_num_of_tokens=max_token)
   
