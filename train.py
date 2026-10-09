@@ -151,6 +151,14 @@ if __name__ == "__main__":
 
   criterion = nn.CrossEntropyLoss()
   optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-  model = train(model, train_loader, test_loader, criterion, optimizer, epochs=epochs, device=device)
+  model = train(
+    model,
+    train_loader,
+    test_loader,
+    criterion,
+    optimizer,
+    epochs=epochs,
+    device=device
+  )
 
 
