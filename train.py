@@ -19,7 +19,7 @@ def make_model_saver(config, run_name=None, save_dir="checkpoints"):
     def save_model(model, epoch):
       if model.decoder_only:
         filename = (
-          f"{config['model_type']}"
+          f"model"
           f"_ctx{config['block_size']}"
           f"_d{config['dmodel']}"
           f"_L{config['num_of_decoder_layers']}"
@@ -30,7 +30,7 @@ def make_model_saver(config, run_name=None, save_dir="checkpoints"):
         )
       else:
         filename = (
-          f"{config['model_type']}"
+          f"model"
           f"_ctx{config['block_size']}"
           f"_d{config['dmodel']}"
           f"_dcdr{config['num_of_decoder_layers']}"
