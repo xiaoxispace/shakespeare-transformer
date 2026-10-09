@@ -146,11 +146,12 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(
                   prog='shakespeare-training',
                   description='pretrain shakespeare transformer')
-  parser.add_argument('-e', '--epochs', default=100, type=int)           # positional argument
+  parser.add_argument('-e', '--epochs', default=100, type=int)
+  parser.add_argument('--enable-wandb', action='store_true')
 
   args = parser.parse_args()
   epochs = args.epochs
-  enable_wandb = True
+  enable_wandb = args.enable_wandb
 
   train_end = 0.7
   val_end = 0.9
