@@ -192,8 +192,7 @@ if __name__ == "__main__":
   print("Epochs: ", epochs)
 
   token_dataset_path = Path("data/token_dataset.pt")
-  token_sequence = torch.load(token_dataset_path)
-  token_sequence = torch.tensor(token_sequence, dtype=torch.long)
+  token_sequence = torch.load(token_dataset_path).to(torch.long)
 
   vocab_to_ind_path = Path("data/vocab_to_ind.json")
   with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
