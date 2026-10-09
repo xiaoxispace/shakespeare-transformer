@@ -186,9 +186,11 @@ if __name__ == "__main__":
     wandb.init(mode="disabled")
     run_name = None
 
+  config_display = {k: str(v) for k, v in config.items()}
   print("Hello World!")
   print("CUDA available: ", torch.cuda.is_available())
   print("CUDA device count: ", torch.cuda.device_count())
+  print("Config: ", json.dumps(config_display, indent=2))
   print("Epochs: ", epochs)
 
   token_dataset_path = Path("data/token_dataset.pt")
