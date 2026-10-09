@@ -61,6 +61,7 @@ def train(
     optimizer,
     epochs=1,
     device='cuda',
+    use_bf16=False,
     save_model_fn=None
   ):
   # Define loss function and optimizer
@@ -80,12 +81,19 @@ def train(
         inputs, labels = batch[0].contiguous(), batch[1].contiguous()
         inputs, labels = inputs.to(device), labels.to(device)
         optimizer.zero_grad()  # Zero the gradients
-        logits = model(inputs, None)  # Forward pass: (B, T, Emb)
-        B, T, C = logits.shape
-        logits = logits.view(B * T, C)
-        labels = labels.view(B * T)
 
-        loss = criterion(logits, labels)  # Compute the loss
+        with torch.autocast(
+          device_type=device.type,
+          dtype=torch.bfloat16,
+          enabled=use_bf16,
+        ):
+          logits = model(inputs, None)  # Forward pass: (B, T, Emb)
+          B, T, C = logits.shape
+          logits = logits.view(B * T, C)
+          labels = labels.view(B * T)
+
+          loss = criterion(logits, labels)  # Compute the loss
+
         loss.backward()  # Backpropagation
         optimizer.step()  # Update weights
 
@@ -148,10 +156,12 @@ if __name__ == "__main__":
                   description='pretrain shakespeare transformer')
   parser.add_argument('-e', '--epochs', default=100, type=int)
   parser.add_argument('--enable-wandb', action='store_true')
+  parser.add_argument('--enable-mixed-precision', action='store_true')
 
   args = parser.parse_args()
   epochs = args.epochs
   enable_wandb = args.enable_wandb
+  enable_mixed_precision = args.enable_mixed_precision
 
   train_end = 0.7
   val_end = 0.9
@@ -166,6 +176,11 @@ if __name__ == "__main__":
   dropout = config['dropout']
   learning_rate = config['learning_rate']
   device = config['device']
+  use_bf16 = (
+    enable_mixed_precision
+    and device.type == "cuda"
+    and torch.cuda.is_bf16_supported()
+  )
 
   if enable_wandb:
     wandb.init(
@@ -179,6 +194,7 @@ if __name__ == "__main__":
         "block_size": block_size,
         "dmodel": dmodel,
         "dropout": dropout,
+        "use_bf16_mixed": use_bf16
       }
     )
     run_name = wandb.run.name
@@ -193,6 +209,7 @@ if __name__ == "__main__":
   print("CUDA device count: ", torch.cuda.device_count())
   print("Config: ", json.dumps(config_display, indent=2))
   print("Epochs: ", epochs)
+  print(f"Mixed precision training enabled: {use_bf16}")
 
   token_dataset_path = Path("data/token_dataset.pt")
   token_sequence = torch.load(token_dataset_path).to(torch.long)
@@ -225,6 +242,7 @@ if __name__ == "__main__":
     optimizer,
     epochs=epochs,
     device=device,
+    use_bf16=use_bf16,
     save_model_fn=make_model_saver(config, run_name=run_name)
   )
 
