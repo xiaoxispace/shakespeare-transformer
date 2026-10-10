@@ -6,6 +6,7 @@ import torch
 from hyperparams import *
 from models.transformer import Transformer
 from pathlib import Path
+from utils import *
 
 
 if __name__ == "__main__":
@@ -41,8 +42,7 @@ if __name__ == "__main__":
   ind_to_vocab = {v: k for k, v in vocab_to_ind.items()}
   vocab_size = len(vocab_to_ind)
   print("Vocab size: ", len(vocab_to_ind))
-  print("Done loading vocab ...")
-  print()
+  print("Done loading vocab ...\n")
 
   print("Construct and load model ...")
   model = Transformer(
@@ -66,15 +66,8 @@ if __name__ == "__main__":
   print("================================")
   print("|| Begin generating contents: ||")
   print("================================")
-  print()
-
-  with torch.no_grad():
-    for i in range(length):
-      input = torch.tensor(token_indx).unsqueeze(0).to(device)
-      output = model(input, input)
-      output = output[:, -1, :]
-      output = torch.softmax(output, dim=-1) #[1, vocab_size]
-      output = torch.multinomial(output, num_samples=1)
-      token_indx.append(output.item())
-      print(ind_to_vocab[output.item()], end='')
-  
+  tokens = generate(model, token_indx, device=device)
+  outputs = "".join([ind_to_vocab[t] for t in tokens])
+  print(outputs)
+  print("================================")
+  print("DONE.")
