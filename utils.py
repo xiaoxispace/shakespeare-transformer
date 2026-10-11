@@ -22,3 +22,28 @@ def generate(model, token_indx, length=1000, device='cpu'):
       token_indx.append(item)
 
   return generated_token_index
+
+
+def perplexity(model, dataset_loader, device='cpu'):
+  with torch.no_grad():
+    total_loss = 0
+    total_tokens = 0
+    for batch in dataset_loader:
+      inputs, labels = batch[0].contiguous(), batch[1].contiguous()
+      inputs, labels = inputs.to(device), labels.to(device)
+
+      logits = model(inputs, None)  # Forward (Batch, Blocksize, Vocab size)
+      B, T, V = logits.shape
+
+      probs = torch.softmax(logits, dim=-1)
+      probs = probs.view(B*T, V)
+      labels = labels.view(B*T, 1)
+
+      correct_probs = probs.gather(dim=-1, index=labels).squeeze(1)
+      loss = -torch.log(correct_probs).sum()
+
+      # compute cross entropy by hand
+      total_loss += loss
+      total_tokens += labels.numel()
+
+  return torch.exp(total_loss/total_tokens)
