@@ -1,5 +1,6 @@
 """This file contains the utilities for output evaluations and generations."""
 import torch
+from tqdm import tqdm
 
 
 def generate(model, token_indx, length=1000, device='cpu'):
@@ -28,7 +29,8 @@ def perplexity(model, dataset_loader, device='cpu'):
   with torch.no_grad():
     total_loss = 0
     total_tokens = 0
-    for batch in dataset_loader:
+    pbar = tqdm(dataset_loader, desc="Eval perplexity")
+    for batch in pbar:
       inputs, labels = batch[0].contiguous(), batch[1].contiguous()
       inputs, labels = inputs.to(device), labels.to(device)
 
