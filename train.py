@@ -139,7 +139,7 @@ def train(
 
     print(f'Epoch {epoch + 1}/{epochs}: train loss {train_loss_history[-1]}, test loss {test_loss_history[-1]}')
 
-    if epoch % 5 == 0 or epoch == epochs-1:
+    if epoch % 3 == 0 or epoch == epochs-1:
       # Save the model
       if save_model_fn is None:
         torch.save(model.state_dict(), os.path.join("checkpoints", f"model-{epoch}.pth"))
