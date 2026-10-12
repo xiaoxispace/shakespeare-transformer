@@ -6,7 +6,7 @@ import torch
 from hyperparams import *
 from models.transformer import Transformer
 from pathlib import Path
-from eval_utils import *
+from utils.eval_utils import *
 
 
 if __name__ == "__main__":
