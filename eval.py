@@ -7,7 +7,7 @@ from dataset import prepare_dataset_loader
 from hyperparams import *
 from models.transformer import Transformer
 from pathlib import Path
-from utils import perplexity
+from eval_utils import perplexity
 
 
 if __name__ == '__main__':
