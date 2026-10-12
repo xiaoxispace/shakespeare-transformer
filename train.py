@@ -71,6 +71,8 @@ def train(
   val_loss_history = []
   epoch_sequence = []
 
+  min_val_loss = torch.inf
+
   for epoch in range(epochs):
     # training
     log_registry = {}
@@ -87,64 +89,71 @@ def train(
           dtype=torch.bfloat16,
           enabled=use_bf16,
         ):
-          logits = model(inputs, None)  # Forward pass: (B, T, Emb)
+          logits = model(inputs, None)
           B, T, C = logits.shape
           logits = logits.view(B * T, C)
           labels = labels.view(B * T)
 
-          loss = criterion(logits, labels)  # Compute the loss
+          loss = criterion(logits, labels)
 
-        loss.backward()  # Backpropagation
-        optimizer.step()  # Update weights
+        loss.backward()
+        optimizer.step()
 
         training_loss += loss.item() * B
-        pbar.update(1)  # Update the progress bar
-    train_loss_history.append(training_loss / len(train_loader.dataset))
-    log_registry['train_loss'] = training_loss / len(train_loader.dataset)
+        pbar.update(1)
+    training_loss = training_loss / len(train_loader.dataset)
+    train_loss_history.append(training_loss)
+    log_registry['train_loss'] = training_loss
 
-    # testing
+    # validation & testing
     with torch.no_grad():
-      test_loss = 0.0
       model.eval()
-      for batch in test_loader:
-        inputs, labels = batch[0].contiguous(), batch[1].contiguous()
-        inputs, labels = inputs.to(device), labels.to(device)
-        logits = model(inputs, None)  # Forward pass: (B, T, Emb)
-        B, T, C = logits.shape
-        logits = logits.view(B * T, C)
-        labels = labels.view(B * T)
-
-        loss = criterion(logits, labels)  # Compute the loss
-        test_loss += loss.item() * B
-      
       val_loss = 0.0
       for batch in val_loader:
         inputs, labels = batch[0].contiguous(), batch[1].contiguous()
         inputs, labels = inputs.to(device), labels.to(device)
-        logits = model(inputs, None)  # Forward pass: (B, T, Emb)
+        logits = model(inputs, None)
         B, T, C = logits.shape
         logits = logits.view(B * T, C)
         labels = labels.view(B * T)
 
-        loss = criterion(logits, labels)  # Compute the loss
+        loss = criterion(logits, labels)
         val_loss += loss.item() * B
 
-    test_loss_history.append(test_loss / len(test_loader.dataset))
-    log_registry['test_loss'] = test_loss / len(test_loader.dataset)
-    val_loss_history.append(val_loss / len(val_loader.dataset))
-    log_registry['val_loss'] = val_loss / len(val_loader.dataset)
+      test_loss = 0.0
+      for batch in test_loader:
+        inputs, labels = batch[0].contiguous(), batch[1].contiguous()
+        inputs, labels = inputs.to(device), labels.to(device)
+        logits = model(inputs, None)
+        B, T, C = logits.shape
+        logits = logits.view(B * T, C)
+        labels = labels.view(B * T)
+
+        loss = criterion(logits, labels)
+        test_loss += loss.item() * B
+
+    val_loss = val_loss / len(val_loader.dataset)
+    val_loss_history.append(val_loss)
+    log_registry['val_loss'] = val_loss
+    test_loss = test_loss / len(test_loader.dataset)
+    test_loss_history.append(test_loss)
+    log_registry['test_loss'] = test_loss
     wandb.log(log_registry)
 
     epoch_sequence.append(epoch + 1)
 
-    print(f'Epoch {epoch + 1}/{epochs}: train loss {train_loss_history[-1]}, test loss {test_loss_history[-1]}')
+    print(f'Epoch {epoch + 1}/{epochs}: train loss {training_loss}, validation loss {val_loss}, test loss {test_loss_history[-1]}')
 
-    if epoch % 3 == 0 or epoch == epochs-1:
-      # Save the model
+    if epoch % 3 == 0 or epoch == epochs-1 or min_val_loss > val_loss:
+      # Save the model every 3 iterations or at then end or validation loss is smaller
       if save_model_fn is None:
         torch.save(model.state_dict(), os.path.join("checkpoints", f"model-{epoch}.pth"))
       else:
         save_model_fn(model, epoch)
+
+      if min_val_loss > val_loss:
+        print(f"Epoch {epoch + 1} reaches minimum validation loss.")
+        min_val_loss = val_loss
 
   print('Training complete!')
 
