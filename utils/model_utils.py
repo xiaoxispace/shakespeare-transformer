@@ -2,6 +2,10 @@ import torch
 import json
 import os
 
+from pathlib import Path
+
+from models.transformer import Transformer
+
 
 def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"):
     def save_model(model, epoch):
@@ -56,5 +60,18 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
     return save_model
 
 
-def load_model():
-  pass
+def load_model(model_path, config='config.json', vocab_to_ind='vocab_to_ind.json'):
+  model_dir = Path(model_path).parent
+  vocab_to_ind_path = model_dir / vocab_to_ind
+  config_path = model_dir / config
+
+  with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
+    vocab_to_ind = json.load(file)
+
+  with open(config_path, "r", encoding="utf-8") as file:
+    config = json.load(file)
+  
+  model = Transformer(**config)
+  model.load_state_dict(torch.load(model_path))
+
+  return model, vocab_to_ind, config
