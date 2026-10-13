@@ -15,7 +15,7 @@ from hyperparams import *
 from models.transformer import Transformer
 
 
-def make_model_saver(config, run_name=None, save_dir="checkpoints"):
+def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"):
     def save_model(model, epoch):
       if model.decoder_only:
         filename = (
@@ -44,11 +44,26 @@ def make_model_saver(config, run_name=None, save_dir="checkpoints"):
       if run_name:
         run_dir = os.path.join(save_dir, run_name)
         os.makedirs(run_dir, exist_ok=True)
-        path = os.path.join(run_dir, filename)
+        model_path = os.path.join(run_dir, filename)
+        vocab_to_ind_path = os.path.join(run_dir, 'vocab_to_ind.json')
+        model_config_path = os.path.join(run_dir, 'config.json')
       else:
-        path = os.path.join(save_dir, filename)
-      torch.save(model.state_dict(), path)
-      print(f"Model saved to {path}")
+        model_path = os.path.join(save_dir, filename)
+        vocab_to_ind_path = os.path.join(save_dir, 'vocab_to_ind.json')
+        model_config_path = os.path.join(save_dir, 'config.json')
+
+      if not os.path.isfile(model_config_path):
+        with open(model_config_path, "w", encoding="utf-8") as f:
+          json.dump(config, f, indent=2)
+        print(f"Model config saved to {model_config_path}")
+
+      if not os.path.isfile(vocab_to_ind_path):
+        with open(vocab_to_ind_path, "w", encoding="utf-8") as f:
+          json.dump(vocab_to_ind, f, indent=2)
+        print(f"Model vocab_to_ind saved to {vocab_to_ind_path}")
+
+      torch.save(model.state_dict(), model_path)
+      print(f"Model saved to {model_path}")
 
     return save_model
 
@@ -85,7 +100,7 @@ def train(
         optimizer.zero_grad()  # Zero the gradients
 
         with torch.autocast(
-          device_type=device.type,
+          device_type=device,
           dtype=torch.bfloat16,
           enabled=use_bf16,
         ):
@@ -187,7 +202,7 @@ if __name__ == "__main__":
   device = config['device']
   use_bf16 = (
     enable_mixed_precision
-    and device.type == "cuda"
+    and device == "cuda"
     and torch.cuda.is_bf16_supported()
   )
 
@@ -220,26 +235,19 @@ if __name__ == "__main__":
   print("Epochs: ", epochs)
   print(f"Mixed precision training enabled: {use_bf16}")
 
+  print("Preparing dataset loader ...")
   token_dataset_path = Path("data/token_dataset.pt")
   token_sequence = torch.load(token_dataset_path).to(torch.long)
+  train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
+  print("Dataset loader ready.")
 
   vocab_to_ind_path = Path("data/vocab_to_ind.json")
   with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
     vocab_to_ind = json.load(file)
-  ind_to_vocab = {v: k for k, v in vocab_to_ind.items()}
   vocab_size = len(vocab_to_ind)
+  config["vocab_size"] = len(vocab_to_ind)
 
-  train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
-  model = Transformer(
-    vocab_size,
-    block_size,
-    dropout,
-    dmodel,
-    num_of_encoder_layers,
-    num_of_decoder_layers,
-    num_of_heads,
-    decoder_only=decoder_only
-  ).to(device)
+  model = Transformer(**config).to(device)
 
   criterion = nn.CrossEntropyLoss()
   optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -252,7 +260,7 @@ if __name__ == "__main__":
     epochs=epochs,
     device=device,
     use_bf16=use_bf16,
-    save_model_fn=make_model_saver(config, run_name=run_name)
+    save_model_fn=make_model_saver(config, vocab_to_ind=vocab_to_ind, run_name=run_name)
   )
 
 

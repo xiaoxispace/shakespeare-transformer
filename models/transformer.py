@@ -74,6 +74,7 @@ class Transformer(nn.Module):
         num_of_decoder_layers=6,
         num_of_heads=8,
         decoder_only=False,
+        **kwargs
       ):
         super(Transformer, self).__init__()
         self.dmodel = dmodel 
