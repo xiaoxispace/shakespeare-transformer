@@ -8,21 +8,19 @@ from models.transformer import Transformer
 
 
 def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"):
-    def save_model(model, epoch):
+    def save_model(model, epoch, is_best_model=False):
       if model.decoder_only:
         filename = (
-          f"model"
           f"_ctx{config['block_size']}"
           f"_d{config['dmodel']}"
           f"_L{config['num_of_decoder_layers']}"
           f"_H{config['num_of_heads']}"
           f"_lr{config['learning_rate']:.0e}"
           f"_dropout{config['dropout']:.0e}"
-          f"_e{epoch}.pth"
+          f"_e{epoch}"
         )
       else:
         filename = (
-          f"model"
           f"_ctx{config['block_size']}"
           f"_d{config['dmodel']}"
           f"_dcdr{config['num_of_decoder_layers']}"
@@ -30,8 +28,13 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
           f"_H{config['num_of_heads']}"
           f"_lr{config['learning_rate']:.0e}"
           f"_dropout{config['dropout']:.0e}"
-          f"_e{epoch}.pth"
+          f"_e{epoch}"
         )
+
+      if is_best_model:
+        filename = "best_model" + filename
+      else:
+        filename = "model" + filename
 
       if run_name:
         run_dir = os.path.join(save_dir, run_name)

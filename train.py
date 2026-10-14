@@ -1,7 +1,7 @@
 
 import argparse
+import copy
 import json
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,7 +11,7 @@ from tqdm import tqdm
 from pathlib import Path
 
 from dataset import prepare_dataset_loader
-from hyperparams import *
+from hyperparams import config
 from models.transformer import Transformer
 from utils.model_utils import make_model_saver
 
@@ -35,6 +35,7 @@ def train(
   epoch_sequence = []
 
   min_val_loss = torch.inf
+  model_of_min_val_loss = None
 
   for epoch in range(epochs):
     # training
@@ -107,16 +108,20 @@ def train(
 
     print(f'Epoch {epoch + 1}/{epochs}: train loss {training_loss}, validation loss {val_loss}, test loss {test_loss_history[-1]}')
 
-    if epoch % 3 == 0 or epoch == epochs-1 or min_val_loss > val_loss:
-      # Save the model every 3 iterations or at then end or validation loss is smaller
-      if save_model_fn is None:
-        torch.save(model.state_dict(), os.path.join("checkpoints", f"model-{epoch}.pth"))
-      else:
-        save_model_fn(model, epoch)
+    if epoch % 5 == 0 or epoch == epochs - 1:
+      # save every 5 epochs or reaches the end of epoch
+      save_model_fn(model, epoch)
 
-      if min_val_loss > val_loss:
-        print(f"Epoch {epoch + 1} reaches minimum validation loss.")
-        min_val_loss = val_loss
+    if min_val_loss > val_loss:
+      print(f"Epoch {epoch + 1} reaches new minimum validation loss.")
+      min_val_loss = val_loss
+      model_of_min_val_loss = copy.deepcopy(model).cpu()
+      min_val_loss_epoch = epoch
+
+  if model_of_min_val_loss:
+    print(f"Model with lowest validation loss achieved at epoch {min_val_loss_epoch}.")
+    print("Saving the best model.")
+    save_model_fn(model_of_min_val_loss, min_val_loss_epoch, is_best_model=True)
 
   print('Training complete!')
 
