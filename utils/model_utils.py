@@ -17,7 +17,7 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
           f"_H{config['num_of_heads']}"
           f"_lr{config['learning_rate']:.0e}"
           f"_dropout{config['dropout']:.0e}"
-          f"_e{epoch}"
+          f"_e{epoch}.pth"
         )
       else:
         filename = (
@@ -28,7 +28,7 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
           f"_H{config['num_of_heads']}"
           f"_lr{config['learning_rate']:.0e}"
           f"_dropout{config['dropout']:.0e}"
-          f"_e{epoch}"
+          f"_e{epoch}.pth"
         )
 
       if is_best_model:
