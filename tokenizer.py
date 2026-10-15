@@ -118,10 +118,10 @@ def plot_token_counts(token_counts, num_random=15):
     reverse=True
   )[:15]
   counts = [count for _, count in tokens]
-  tokens = [display_token(token) for token, _ in tokens]
+  displayed_tokens = [display_token(token) for token, _ in tokens]
 
   plt.figure(figsize=(12, 5))
-  plt.bar(tokens, counts)
+  plt.bar(displayed_tokens, counts)
   plt.xlabel("Token")
   plt.ylabel("Count")
   plt.title("Top 15 Most Frequent Tokens")
