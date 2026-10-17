@@ -16,6 +16,24 @@ class LanguageModelingDataset(torch.utils.data.Dataset):
         return x, y
 
 
+class ShakespearePlayDataset(LanguageModelingDataset):
+  def __init__(self, tokens, block_size):
+    super(ShakespearePlayDataset).__init__(tokens, block_size)
+
+
+def build_token_tensor(tokens, vocab_to_ind):
+  token_ids = [vocab_to_ind[t] for t in tokens]
+  token_dataset = torch.tensor(token_ids, dtype=torch.int32)
+  return token_dataset
+
+
+def create_dataset(tokens, dataset_name):
+  token_dataset = build_token_tensor(tokens)
+
+  if dataset_name == 'shakespeare-play':
+    return ShakespearePlayDataset(token_dataset)
+
+
 def prepare_dataset_loader(tokens, block_size, batch_size, train_end, val_end):
   n = len(tokens)
 
