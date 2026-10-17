@@ -4,7 +4,7 @@ import torch
 from collections import Counter
 
 from data_config import (
-  TOKENIZER_TOKENS_FILE_NAME,
+  TOKENIZER_RAW_TOKEN_FILE_NAME,
   TOKENIZER_TOKEN_COUNT_FILE_NAME,
   TOKENIZER_VOCAB_TO_IND_FILE_NAME
 )
@@ -13,10 +13,10 @@ from tokenizers.tokenizer_abc import TokenizerABC
 
 def prepare_tokenizer_data_paths(tokenizer_data_path):
   tokenizer_data_path.mkdir(parents=True, exist_ok=True)
-  tokens_path = tokenizer_data_path / TOKENIZER_TOKENS_FILE_NAME
+  raw_token_path = tokenizer_data_path / TOKENIZER_RAW_TOKEN_FILE_NAME
   vocab_to_ind_path = tokenizer_data_path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
   token_count_path = tokenizer_data_path / TOKENIZER_TOKEN_COUNT_FILE_NAME
-  return tokens_path, vocab_to_ind_path, token_count_path
+  return raw_token_path, vocab_to_ind_path, token_count_path
 
 
 class CharTokenizer(TokenizerABC):
@@ -40,8 +40,8 @@ class CharTokenizer(TokenizerABC):
     print("Tokens appearing >= 1000:", (counts >= 1000).sum())
 
   def save(self, path):
-    tokens_path, vocab_to_ind_path, token_count_path = prepare_tokenizer_data_paths(path)
-    with open(tokens_path, "w", encoding="utf-8") as file:
+    raw_token_path, vocab_to_ind_path, token_count_path = prepare_tokenizer_data_paths(path)
+    with open(raw_token_path, "w", encoding="utf-8") as file:
       json.dump(self.tokens, file)
     with open(vocab_to_ind_path, "w", encoding="utf-8") as file:
       json.dump(self.vocab_to_ind, file, indent=4)
@@ -50,8 +50,8 @@ class CharTokenizer(TokenizerABC):
 
   @classmethod
   def load(cls, path):
-    tokens_path, vocab_to_ind_path, token_count_path = prepare_tokenizer_data_paths(path)
-    with open(tokens_path, "r", encoding="utf-8") as file:
+    raw_token_path, vocab_to_ind_path, token_count_path = prepare_tokenizer_data_paths(path)
+    with open(raw_token_path, "r", encoding="utf-8") as file:
       tokens = json.load(file)
     with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
       vocab_to_ind = json.load(file)

@@ -66,7 +66,7 @@ def plot_token_counts(token_counts, num_random=15):
   num_random = min(num_random, len(token_counts))
 
   sampled_tokens = random.sample(
-    [display_token(token) for token in token_counts.keys()],
+    [token for token in token_counts.keys()],
     num_random
   )
 
@@ -74,6 +74,7 @@ def plot_token_counts(token_counts, num_random=15):
     token_counts[token]
     for token in sampled_tokens
   ]
+  sampled_tokens = [display_token(t) for t in sampled_tokens] # normalize for display
 
   plt.figure(figsize=(12, 5))
   plt.bar(sampled_tokens, sampled_counts)
