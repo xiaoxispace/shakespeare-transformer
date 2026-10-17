@@ -98,6 +98,10 @@ Believe me soon pla(shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transf
     3. Install the required dependencies `python -m pip install -r requirements.txt`
 3. Execute training, eval or generation scripts. 
     - To train model, run `python train.py -e <epoch number> --enable-mixed-precision`. `--enable-wandb` is optional provided environment variable `WANDB_API_KEY` is available to upload training statistics to WandB.
+      Note: To use tmux with, for example, training script: 
+        ```bash
+        tmux new-session -d -s train 'python train.py -e 100 --enable-wandb --enable-mixed-precision'
+        ```
     - To evaluate model on the test dataset, run `python eval.py -m <path to the model>`.
     - To genearate response, run `python gen.py -m <path to the model>`.
 
