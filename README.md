@@ -71,5 +71,36 @@ That feather they offerent Caesar. I shall
 Believe me soon pla(shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transformer$ 
 ```
 
+# Setup
+
+## Install Python Environment
+
+1. Install pyenv from [the pyenv public repo](https://github.com/pyenv/pyenv#a-getting-pyenv). Specifically, for linux, 
+    1. Update and install system dependencies
+        ```bash
+        sudo apt update
+        sudo apt install -y make build-essential libssl-dev zlib1g-dev \
+          libbz2-dev libreadline-dev libsqlite3-dev curl git \
+          libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev \
+          libffi-dev liblzma-dev
+        ```
+    2. Run `curl -fsSL https://pyenv.run | bash` to install pyenv
+    3. Setup pyenv for shell with command
+        ```bash
+        echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+        echo 'command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+        echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+        ```
+    4. Restart shell with command `exec "$SHELL"`
+2. Install Python and the required dependencies
+    1. Run `pyenv install 3.12.15`
+    2. Create the virtual environment `pyenv virtualenv 3.12.15 shakespeare`
+    3. Install the required dependencies `python -m pip install -r requirements.txt`
+3. Execute training, eval or generation scripts. 
+    - To train model, run `python train.py -e <epoch number> --enable-mixed-precision`. `--enable-wandb` is optional provided `` environment variable is available to upload training statistics to WandB.
+    - To evaluate model on the test dataset, run `python eval.py -m <path to the model>`.
+    - To genearate response, run `python gen.py`.
+
+
 # Reference
 The complete text of Shakespeare's work can be found in [Folger Shakespeare Library](https://www.folger.edu/explore/shakespeares-works/all-works/). 
