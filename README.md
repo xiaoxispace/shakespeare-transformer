@@ -99,7 +99,7 @@ Believe me soon pla(shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transf
 3. Execute training, eval or generation scripts. 
     - To train model, run `python train.py -e <epoch number> --enable-mixed-precision`. `--enable-wandb` is optional provided `` environment variable is available to upload training statistics to WandB.
     - To evaluate model on the test dataset, run `python eval.py -m <path to the model>`.
-    - To genearate response, run `python gen.py`.
+    - To genearate response, run `python gen.py -m <path to the model>`.
 
 
 # Reference
