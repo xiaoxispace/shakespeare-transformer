@@ -20,16 +20,14 @@ if __name__ == "__main__":
   start = parser.start
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-  model, vocab_to_ind, config = load_model(model_path)
+  model, tokenizer, config = load_model(model_path)
   model.to(device)
   model.eval()
   config_display = {k: str(v) for k, v in config.items()}
   print("Model config: ", json.dumps(config_display, indent=2))
 
-  ind_to_vocab = {v: k for k, v in vocab_to_ind.items()}
-  token_indx = [vocab_to_ind[c] for c in start]
+  input_token_ids = tokenizer.encode(start)
 
   print("|| Begin generating contents: ||")
-  tokens = generate(model, token_indx, device=device)
-  outputs = "".join([ind_to_vocab[t] for t in tokens])
-  print(outputs)
+  output_token_ids = generate(model, input_token_ids, device=device)
+  print(tokenizer.decode(output_token_ids))
