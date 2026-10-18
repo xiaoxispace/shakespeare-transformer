@@ -26,6 +26,7 @@ class CharTokenizer(TokenizerABC):
     super(CharTokenizer).__init__()
     self.raw_tokens = None
     self.vocab_to_ind = None
+    self.ind_to_vocab = None
     self.token_counts = None
 
   def train(self, corpus, **kwargs):
@@ -66,10 +67,15 @@ class CharTokenizer(TokenizerABC):
     return t
 
   def encode(self, text):
-    pass
+    return [self.vocab_to_ind[s] for s in text]
 
-  def decode(self, tokens):
-    pass
+  def decode(self, token_ids):
+    if not self.ind_to_vocab:
+      self.ind_to_vocab = {v :k for k, v in self.vocab_to_ind.items()}
+    return ''.join([self.ind_to_vocab[i] for i in token_ids])
+
+  def vocab_size(self):
+    return len(self.vocab_to_ind)
 
   def _tokenize_play(self, play_string):
     """Tokenize text at character level."""

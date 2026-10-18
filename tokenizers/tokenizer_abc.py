@@ -21,5 +21,10 @@ class TokenizerABC(ABC):
     pass
 
   @abstractmethod
-  def decode(self, tokens):
+  def decode(self, token_ids):
+    pass
+
+  @property
+  @abstractmethod
+  def vocab_size(self):
     pass

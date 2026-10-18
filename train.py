@@ -196,7 +196,7 @@ if __name__ == "__main__":
   print(f"Loading {tokenizer_name} tokenizer ...")
   tokenizer = load_tokenizer(tokenizer_name, tokenizer_path)
   vocab_to_ind = tokenizer.vocab_to_ind
-  vocab_size = len(vocab_to_ind)
+  vocab_size = tokenizer.vocab_size
   config["vocab_size"] = len(vocab_to_ind)
   print("Loading tokenizer done.")
 
