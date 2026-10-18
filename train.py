@@ -219,7 +219,7 @@ if __name__ == "__main__":
     test_loader,
     criterion,
     optimizer,
-    save_model_fn=make_model_saver(config, vocab_to_ind=vocab_to_ind, run_name=run_name),
+    save_model_fn=make_model_saver(config, tokenizer, run_name=run_name),
     epochs=epochs,
     device=device,
     use_bf16=use_bf16

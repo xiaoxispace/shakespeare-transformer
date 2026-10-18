@@ -62,6 +62,7 @@ class CharTokenizer(TokenizerABC):
       self.ind_to_vocab = {v :k for k, v in self.vocab_to_ind.items()}
     return ''.join([self.ind_to_vocab[i] for i in token_ids])
 
+  @property
   def vocab_size(self):
     return len(self.vocab_to_ind)
 
