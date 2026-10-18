@@ -10,5 +10,6 @@
   "num_of_encoder_layers": 3,
   "num_of_heads": 4,
   "decoder_only": true,
-  "vocab_size": 83
+  "vocab_size": 83,
+  "tokenizer": "char"
 }
