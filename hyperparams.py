@@ -17,6 +17,6 @@ config = {
   "device": "cuda" if torch.cuda.is_available() else "cpu",
   "learning_rate": 3e-4,
   # tokenizer parameters
-  "tokenizer": "bpe",
+  "tokenizer": "char",
   "bpe_vocab_threshold": 500
 }

@@ -6,12 +6,14 @@ Executing this file produces
   2. token index of the corpus stored in pytorch tensor of type torch.int32
   3. a json string-to-integer map that denotes each token's number of occurrences. 
 """
-import argparse
 import logging
 import random
 import matplotlib.pyplot as plt
 
+from collections import Counter
+
 from data_config import PLAT_TEXT_OUTPUT_PATH
+from hyperparams import config
 from utils.tokenizer_utils import create_tokenizer, decide_tokenizer_data_path
 
 logging.basicConfig(level=logging.INFO)
@@ -89,39 +91,19 @@ def plot_token_counts(token_counts, num_random=15):
 
 
 def main():
-  argparser = argparse.ArgumentParser()
-  argparser.add_argument('-t', '--tokenizer', choices=["char", "bpe"], default='char')
-
-  parser = argparser.parse_args()
-  tokenizer = parser.tokenizer
-
-  tokenizer_data_path = decide_tokenizer_data_path(tokenizer)
-
   corpus_path = PLAT_TEXT_OUTPUT_PATH
   corpus = load_corpus(corpus_path)
 
-  tokenizer = create_tokenizer(tokenizer)
+  tokenizer_name = config["tokenizer"]
+  tokenizer = create_tokenizer(tokenizer_name)
   tokenizer.train(corpus)
+  tokenizer_data_path = decide_tokenizer_data_path(tokenizer_name)
   tokenizer.save(tokenizer_data_path)
-  plot_token_counts(tokenizer.token_counts)
 
-
-# def sample_dataset():
-#   """Sample 100 tokens from token dataset to sanity-check the reverse process."""
-#   token_path = Path("data/token_dataset.pt")
-#   vocab_to_ind_path = Path("data/vocab_to_ind.json")
-
-#   dataset = torch.load(token_path, weights_only=True)
-#   with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
-#     vocab_to_ind = json.load(file)
-#   ind_to_vocab = {v: k for k, v in vocab_to_ind.items()}
-
-#   beginning = random.randint(0, len(dataset) - 101)
-
-#   txt = ""
-#   for i in range(beginning, beginning+100):
-#     txt += ind_to_vocab[int(dataset[i])]
-#   print(txt)
+  token_ids = tokenizer.encode(corpus)
+  counter = Counter(token_ids)
+  token_counts = { tokenizer.decode([i]): counter[i] for i in counter }
+  plot_token_counts(token_counts)
 
 
 if __name__ == "__main__":
