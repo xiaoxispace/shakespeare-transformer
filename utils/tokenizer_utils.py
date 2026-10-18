@@ -15,8 +15,15 @@ def decide_tokenizer_data_path(tokenizer):
     return BPE_TOKENIZER_DATA_PATH
 
 
-def create_tokenizer(tokenizer, **kwargs):
-  if tokenizer == "char":
+def create_tokenizer(tokenizer_name, **kwargs):
+  if tokenizer_name == "char":
     return CharTokenizer()
-  elif tokenizer == "bpe":
+  elif tokenizer_name == "bpe":
     return BPETokenizer()
+
+
+def load_tokenizer(tokenizer_name, tokenizer_path):
+  if tokenizer_name == "char":
+    return CharTokenizer.load(tokenizer_path)
+  elif tokenizer_name == "bpe":
+    return BPETokenizer.load(tokenizer_path)

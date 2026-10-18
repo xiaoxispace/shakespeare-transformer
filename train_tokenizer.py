@@ -65,6 +65,7 @@ def plot_token_counts(token_counts, num_random=15):
   # -------------------------
   num_random = min(num_random, len(token_counts))
 
+  random.seed(6)
   sampled_tokens = random.sample(
     [token for token in token_counts.keys()],
     num_random
