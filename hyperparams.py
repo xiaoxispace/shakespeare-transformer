@@ -4,7 +4,7 @@ import torch
 
 config = {
   # model parameters
-  "block_size": 256,
+  "block_size": 64,
   "batch_size": 256,
   "dmodel": 256,
   "dropout": 0.1,
@@ -18,5 +18,5 @@ config = {
   "learning_rate": 3e-4,
   # tokenizer parameters
   "tokenizer": "bpe",
-  "bpe_vocab_threshold": 300
+  "bpe_vocab_threshold": 150
 }
