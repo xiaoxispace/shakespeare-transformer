@@ -4,7 +4,7 @@ import torch
 
 config = {
   # model parameters
-  "block_size": 256,
+  "block_size": 512,
   "batch_size": 256,
   "dmodel": 256,
   "dropout": 0.1,
@@ -15,8 +15,8 @@ config = {
   # training parameters
   "cuda_available": torch.cuda.is_available(),
   "device": "cuda" if torch.cuda.is_available() else "cpu",
-  "learning_rate": 3e-4,
+  "learning_rate": 3e-5,
   # tokenizer parameters
-  "tokenizer": "bpe",
+  "tokenizer": "char",
   "bpe_vocab_threshold": 300
 }
