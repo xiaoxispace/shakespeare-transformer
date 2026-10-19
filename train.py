@@ -111,7 +111,8 @@ def train(
 
     if epoch % 5 == 0 or epoch == epochs - 1:
       # save every 5 epochs or reaches the end of epoch
-      save_model_fn(model, epoch)
+      intermediate_model_path, _ = save_model_fn(model, epoch)
+      print(f"Intermediate model at epoch {epoch} saved to {intermediate_model_path}")
 
     if min_val_loss > val_loss:
       print(f"Epoch {epoch + 1} reaches new minimum validation loss.")
