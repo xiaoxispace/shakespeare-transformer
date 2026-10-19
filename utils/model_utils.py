@@ -37,26 +37,26 @@ def make_model_saver(config, tokenizer, run_name=None, save_dir="checkpoints", t
       else:
         filename = "model" + filename
 
+      target_dir = Path(save_dir)
       if run_name:
-        run_dir = os.path.join(save_dir, run_name)
-        os.makedirs(run_dir, exist_ok=True)
-        model_path = os.path.join(run_dir, filename)
-        tokenizer_path = os.path.join(run_dir, tokenizer_subpath)
-        model_config_path = os.path.join(run_dir, 'config.json')
+        run_dir = target_dir / run_name
+        run_dir.mkdir(parents=True, exist_ok=True)
+        model_path = run_dir / filename
+        tokenizer_path = run_dir / tokenizer_subpath
+        model_config_path = run_dir / 'config.json'
       else:
-        model_path = os.path.join(save_dir, filename)
-        tokenizer_path = os.path.join(save_dir, tokenizer_subpath)
-        model_config_path = os.path.join(save_dir, 'config.json')
+        model_path = target_dir / filename
+        tokenizer_path = target_dir / tokenizer_subpath
+        model_config_path = target_dir / 'config.json'
 
-      if not os.path.isfile(model_config_path):
+      if not model_config_path.is_file():
         with open(model_config_path, "w", encoding="utf-8") as f:
           json.dump(config, f, indent=2)
-        print(f"Model config saved to {model_config_path}")
 
       tokenizer.save(tokenizer_path)
-      print(f"Tokenizer saved to {tokenizer_path}")
       torch.save(model.state_dict(), model_path)
-      print(f"Model saved to {model_path}")
+
+      return model_path, tokenizer_path
 
     return save_model
 
