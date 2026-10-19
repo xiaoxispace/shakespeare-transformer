@@ -63,6 +63,7 @@ class Decoder(nn.Module):
         y = self.decoder_ffwd(y)
         return y
 
+
 class Transformer(nn.Module):
     def __init__(
         self,

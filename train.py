@@ -36,6 +36,7 @@ def train(
 
   min_val_loss = torch.inf
   model_of_min_val_loss = None
+  best_model_path = None
 
   for epoch in range(epochs):
     # training
@@ -118,10 +119,15 @@ def train(
       model_of_min_val_loss = copy.deepcopy(model).cpu()
       min_val_loss_epoch = epoch
 
+      if best_model_path:
+        print(f"Remove previous best model {best_model_path.name}")
+        best_model_path.unlink(missing_ok=True)
+      best_model_path, _ = save_model_fn(model_of_min_val_loss, min_val_loss_epoch, is_best_model=True)
+      print(f"Latest best model saved to {best_model_path}")
+
   if model_of_min_val_loss:
     print(f"Model with lowest validation loss achieved at epoch {min_val_loss_epoch}.")
-    print("Saving the best model.")
-    save_model_fn(model_of_min_val_loss, min_val_loss_epoch, is_best_model=True)
+    print(f"Best model name: {best_model_path.name}")
 
   print('Training complete!')
 
