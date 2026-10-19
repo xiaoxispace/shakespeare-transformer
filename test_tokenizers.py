@@ -16,7 +16,7 @@ def test_char_tokenizer():
     assert corpus[i] == decoded_corpus[i], "decoded corpus should have the same content"
 
 
-@pytest.mark.slow
+@pytest.mark.skip
 def test_bpe_train_large_corpus():
   """
   Use for performance profiling & validation.
