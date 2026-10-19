@@ -1,9 +1,6 @@
 import torch
 
-from data_config import (
-  BPE_TOKENIZER_DATA_PATH,
-  CHAR_TOKENIZER_DATA_PATH,
-)
+from data_config import BPE_TOKENIZER_DATA_PATH, CHAR_TOKENIZER_DATA_PATH
 from tokenizers.char_tokenizer import CharTokenizer
 from tokenizers.bpe_tokenizer import BPETokenizer
 
@@ -19,7 +16,7 @@ def create_tokenizer(tokenizer_name, **kwargs):
   if tokenizer_name == "char":
     return CharTokenizer()
   elif tokenizer_name == "bpe":
-    return BPETokenizer()
+    return BPETokenizer(threshold=kwargs["bpe_vocab_threshold"])
 
 
 def load_tokenizer(tokenizer_name, tokenizer_path):

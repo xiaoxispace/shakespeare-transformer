@@ -4,21 +4,8 @@ import torch
 from collections import Counter
 from pathlib import Path
 
-from data_config import (
-  TOKENIZER_RAW_TOKEN_FILE_NAME,
-  TOKENIZER_TOKEN_COUNT_FILE_NAME,
-  TOKENIZER_VOCAB_TO_IND_FILE_NAME
-)
+from data_config import TOKENIZER_VOCAB_TO_IND_FILE_NAME
 from tokenizers.tokenizer_abc import TokenizerABC
-
-
-def prepare_tokenizer_data_paths(tokenizer_data_path):
-  tokenizer_data_path = Path(tokenizer_data_path)
-  tokenizer_data_path.mkdir(parents=True, exist_ok=True)
-  raw_token_path = tokenizer_data_path / TOKENIZER_RAW_TOKEN_FILE_NAME
-  vocab_to_ind_path = tokenizer_data_path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
-  token_count_path = tokenizer_data_path / TOKENIZER_TOKEN_COUNT_FILE_NAME
-  return raw_token_path, vocab_to_ind_path, token_count_path
 
 
 class CharTokenizer(TokenizerABC):
@@ -40,20 +27,6 @@ class CharTokenizer(TokenizerABC):
     print("Tokens appearing >= 100:", (counts >= 100).sum())
     print("Tokens appearing >= 1000:", (counts >= 1000).sum())
 
-  def save(self, path):
-    _, vocab_to_ind_path, _ = prepare_tokenizer_data_paths(path)
-    with open(vocab_to_ind_path, "w", encoding="utf-8") as file:
-      json.dump(self.vocab_to_ind, file, indent=4)
-
-  @classmethod
-  def load(cls, path):
-    _, vocab_to_ind_path, _ = prepare_tokenizer_data_paths(path)
-    with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
-      vocab_to_ind = json.load(file)
-    t = cls()
-    t.vocab_to_ind = vocab_to_ind
-    return t
-
   def encode(self, text):
     return [self.vocab_to_ind[s] for s in text]
 
@@ -61,6 +34,22 @@ class CharTokenizer(TokenizerABC):
     if not self.ind_to_vocab:
       self.ind_to_vocab = {v :k for k, v in self.vocab_to_ind.items()}
     return ''.join([self.ind_to_vocab[i] for i in token_ids])
+
+  def save(self, path):
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    vocab_to_ind_path = path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
+    with open(vocab_to_ind_path, "w", encoding="utf-8") as file:
+      json.dump(self.vocab_to_ind, file, indent=4)
+
+  @classmethod
+  def load(cls, path):
+    vocab_to_ind_path = path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
+    with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
+      vocab_to_ind = json.load(file)
+    t = cls()
+    t.vocab_to_ind = vocab_to_ind
+    return t
 
   @property
   def vocab_size(self):

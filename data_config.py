@@ -9,9 +9,8 @@ PLAT_TEXT_OUTPUT_PATH = Path("data/output.txt")
 
 DATASETS_DIR = Path("data/datasets")
 
-TOKENIZER_RAW_TOKEN_FILE_NAME = "raw_tokens.json"
 TOKENIZER_VOCAB_TO_IND_FILE_NAME = "vocab_to_ind.json"
-TOKENIZER_TOKEN_COUNT_FILE_NAME = "token_count.json"
+TOKENIZER_CONFIG_FILE_NAME = "config.json"
 
 CHAR_TOKENIZER_DATA_PATH = Path("data/char_tokenizer")
 BPE_TOKENIZER_DATA_PATH = Path("data/bpe_tokenizer")

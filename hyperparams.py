@@ -1,4 +1,4 @@
-"""This file contains the hyperparameters related to model architecture and training."""
+"""This file contains the hyperparameters related to model architecture, tokenizer, and training."""
 import torch
 
 
@@ -17,6 +17,6 @@ config = {
   "device": "cuda" if torch.cuda.is_available() else "cpu",
   "learning_rate": 3e-4,
   # tokenizer parameters
-  "tokenizer": "char",
-  "bpe_vocab_threshold": 500
+  "tokenizer": "bpe",
+  "bpe_vocab_threshold": 300
 }

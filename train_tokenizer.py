@@ -10,8 +10,6 @@ import logging
 import random
 import matplotlib.pyplot as plt
 
-from collections import Counter
-
 from data_config import PLAT_TEXT_OUTPUT_PATH
 from hyperparams import config
 from utils.tokenizer_utils import create_tokenizer, decide_tokenizer_data_path
@@ -95,15 +93,15 @@ def main():
   corpus = load_corpus(corpus_path)
 
   tokenizer_name = config["tokenizer"]
-  tokenizer = create_tokenizer(tokenizer_name)
+  tokenizer = create_tokenizer(tokenizer_name, **config)
   tokenizer.train(corpus)
   tokenizer_data_path = decide_tokenizer_data_path(tokenizer_name)
   tokenizer.save(tokenizer_data_path)
 
-  token_ids = tokenizer.encode(corpus)
-  counter = Counter(token_ids)
-  token_counts = { tokenizer.decode([i]): counter[i] for i in counter }
-  plot_token_counts(token_counts)
+  # token_ids = tokenizer.encode(corpus)
+  # counter = Counter(token_ids)
+  # token_counts = { tokenizer.decode([i]): counter[i] for i in counter }
+  # plot_token_counts(token_counts)
 
 
 if __name__ == "__main__":
