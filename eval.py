@@ -19,13 +19,16 @@ if __name__ == '__main__':
   val_end = 0.9  # same as train.py
   device = "cuda" if torch.cuda.is_available() else "cpu"
 
-  model, vocab_to_ind, config = load_model(model_path)
+  model, tokenizer, config = load_model(model_path)
   model.to(device)
 
   print("Load dataset to compute metrics.")
-  token_dataset_path = Path("data/token_dataset.pt")
-  token_sequence = torch.load(token_dataset_path).to(torch.long)
-  _, _, test_loader = prepare_dataset_loader(token_sequence, config["block_size"], config["batch_size"], train_end, val_end)
+  dataset_path = Path("data/output.txt")
+  with open(dataset_path, 'r', encoding='utf-8') as file:
+    raw_tokens = file.read()
+  token_ids = tokenizer.encode(raw_tokens)
+  token_sequence = torch.tensor(token_ids).to(torch.long)
+  train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, config["block_size"], config["batch_size"], train_end, val_end)
   print("Load done.\n")
 
   per = perplexity(model, test_loader, device)

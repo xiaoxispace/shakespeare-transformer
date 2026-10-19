@@ -10,7 +10,7 @@ Note: The headers of plays without "Characters in Play" are removed manually.
 """
 import logging
 
-from pathlib import Path
+from data_config import SHAKESPEARES_PLAY_DIR, PLAT_TEXT_OUTPUT_PATH
 
 
 logging.basicConfig(level=logging.INFO)
@@ -47,10 +47,10 @@ def store_corpus(corpus, output_path):
 
 
 def main():
-  data_path = Path("data/shakespeares-works_TXT_FolgerShakespeare")
-  output_path = Path("data/output.txt")
+  data_path = SHAKESPEARES_PLAY_DIR
+  output_path = PLAT_TEXT_OUTPUT_PATH
   output = ""
-  for file_path in data_path.glob("*.txt"):
+  for file_path in sorted(data_path.glob("*.txt")):
     logger.info(f"Begin reading {file_path}")
     text = read_play_file(file_path)
     text = remove_headers(text)

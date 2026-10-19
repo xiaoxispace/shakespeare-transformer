@@ -5,9 +5,10 @@ import os
 from pathlib import Path
 
 from models.transformer import Transformer
+from utils.tokenizer_utils import load_tokenizer
 
 
-def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"):
+def make_model_saver(config, tokenizer, run_name=None, save_dir="checkpoints", tokenizer_subpath="tokenizer"):
     def save_model(model, epoch, is_best_model=False):
       if model.decoder_only:
         filename = (
@@ -40,11 +41,11 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
         run_dir = os.path.join(save_dir, run_name)
         os.makedirs(run_dir, exist_ok=True)
         model_path = os.path.join(run_dir, filename)
-        vocab_to_ind_path = os.path.join(run_dir, 'vocab_to_ind.json')
+        tokenizer_path = os.path.join(run_dir, tokenizer_subpath)
         model_config_path = os.path.join(run_dir, 'config.json')
       else:
         model_path = os.path.join(save_dir, filename)
-        vocab_to_ind_path = os.path.join(save_dir, 'vocab_to_ind.json')
+        tokenizer_path = os.path.join(save_dir, tokenizer_subpath)
         model_config_path = os.path.join(save_dir, 'config.json')
 
       if not os.path.isfile(model_config_path):
@@ -52,29 +53,26 @@ def make_model_saver(config, vocab_to_ind, run_name=None, save_dir="checkpoints"
           json.dump(config, f, indent=2)
         print(f"Model config saved to {model_config_path}")
 
-      if not os.path.isfile(vocab_to_ind_path):
-        with open(vocab_to_ind_path, "w", encoding="utf-8") as f:
-          json.dump(vocab_to_ind, f, indent=2)
-        print(f"Model vocab_to_ind saved to {vocab_to_ind_path}")
-
+      tokenizer.save(tokenizer_path)
+      print(f"Tokenizer saved to {tokenizer_path}")
       torch.save(model.state_dict(), model_path)
       print(f"Model saved to {model_path}")
 
     return save_model
 
 
-def load_model(model_path, config='config.json', vocab_to_ind='vocab_to_ind.json'):
+def load_model(model_path, config='config.json', tokenizer_path="tokenizer"):
   model_dir = Path(model_path).parent
-  vocab_to_ind_path = model_dir / vocab_to_ind
+  tokenizer_path = model_dir / tokenizer_path
   config_path = model_dir / config
-
-  with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
-    vocab_to_ind = json.load(file)
 
   with open(config_path, "r", encoding="utf-8") as file:
     config = json.load(file)
-  
+
+  tokenizer_name = config["tokenizer"]
+  tokenizer = load_tokenizer(tokenizer_name, tokenizer_path)
+
   model = Transformer(**config)
   model.load_state_dict(torch.load(model_path))
 
-  return model, vocab_to_ind, config
+  return model, tokenizer, config

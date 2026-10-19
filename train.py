@@ -8,12 +8,12 @@ import torch.optim as optim
 import wandb
 
 from tqdm import tqdm
-from pathlib import Path
 
 from dataset import prepare_dataset_loader
 from hyperparams import config
 from models.transformer import Transformer
 from utils.model_utils import make_model_saver
+from utils.tokenizer_utils import load_tokenizer
 
 
 def train(
@@ -132,11 +132,17 @@ if __name__ == "__main__":
                   prog='shakespeare-training',
                   description='pretrain shakespeare transformer')
   parser.add_argument('-e', '--epochs', default=100, type=int)
+  parser.add_argument('-t', '--tokenizer', choices=["char", "bpe"], default='char')
+  parser.add_argument('--tokenizer-path', type=str)
+  parser.add_argument('--dataset-path', type=str)
   parser.add_argument('--enable-wandb', action='store_true')
   parser.add_argument('--enable-mixed-precision', action='store_true')
 
   args = parser.parse_args()
   epochs = args.epochs
+  tokenizer_name = args.tokenizer
+  tokenizer_path = args.tokenizer_path
+  dataset_path = args.dataset_path
   enable_wandb = args.enable_wandb
   enable_mixed_precision = args.enable_mixed_precision
 
@@ -171,7 +177,8 @@ if __name__ == "__main__":
         "block_size": block_size,
         "dmodel": dmodel,
         "dropout": dropout,
-        "use_bf16_mixed": use_bf16
+        "use_bf16_mixed": use_bf16,
+        "tokenizer": tokenizer_name
       }
     )
     run_name = wandb.run.name
@@ -188,17 +195,19 @@ if __name__ == "__main__":
   print("Epochs: ", epochs)
   print(f"Mixed precision training enabled: {use_bf16}")
 
+  print(f"Loading {tokenizer_name} tokenizer ...")
+  tokenizer = load_tokenizer(tokenizer_name, tokenizer_path)
+  vocab_size = tokenizer.vocab_size
+  config["vocab_size"] = vocab_size
+  print("Loading tokenizer done.")
+
   print("Preparing dataset loader ...")
-  token_dataset_path = Path("data/token_dataset.pt")
-  token_sequence = torch.load(token_dataset_path).to(torch.long)
+  with open(dataset_path, 'r', encoding='utf-8') as file:
+    raw_tokens = file.read()
+  token_ids = tokenizer.encode(raw_tokens)
+  token_sequence = torch.tensor(token_ids).to(torch.long)
   train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
   print("Dataset loader ready.")
-
-  vocab_to_ind_path = Path("data/vocab_to_ind.json")
-  with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
-    vocab_to_ind = json.load(file)
-  vocab_size = len(vocab_to_ind)
-  config["vocab_size"] = len(vocab_to_ind)
 
   model = Transformer(**config).to(device)
 
@@ -210,7 +219,7 @@ if __name__ == "__main__":
     test_loader,
     criterion,
     optimizer,
-    save_model_fn=make_model_saver(config, vocab_to_ind=vocab_to_ind, run_name=run_name),
+    save_model_fn=make_model_saver(config, tokenizer, run_name=run_name),
     epochs=epochs,
     device=device,
     use_bf16=use_bf16
