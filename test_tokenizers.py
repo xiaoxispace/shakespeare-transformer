@@ -16,6 +16,21 @@ def test_char_tokenizer():
     assert corpus[i] == decoded_corpus[i], "decoded corpus should have the same content"
 
 
+def test_char_save_and_load(cache):
+  # need pytest's builtin fixture cache object
+  pytest_cache_path = cache._cachedir
+  # the corpus has 45 chars; use 60 as threshold to test saving "merged bytes" behavior
+  corpus = "Hello, world! There's no stop _in word! ^&*)()%$#@!~`'\";:/?.>,<\\|-_=+\t\n"
+  t = CharTokenizer()
+  t.train(corpus)
+  bpe_tokenizer_save_test_path = "char-save-test"
+  temp_path = pytest_cache_path / bpe_tokenizer_save_test_path
+  t.save(temp_path)
+  loaded_t = CharTokenizer.load(temp_path)
+  assert t.vocab_size == loaded_t.vocab_size
+  assert t.vocab_to_ind == loaded_t.vocab_to_ind
+
+
 @pytest.mark.skip
 def test_bpe_train_large_corpus():
   """
