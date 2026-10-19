@@ -44,6 +44,7 @@ class CharTokenizer(TokenizerABC):
 
   @classmethod
   def load(cls, path):
+    path = Path(path)
     vocab_to_ind_path = path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
     with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
       vocab_to_ind = json.load(file)
