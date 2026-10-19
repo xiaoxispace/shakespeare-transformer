@@ -19,7 +19,6 @@ def test_char_tokenizer():
 def test_char_save_and_load(cache):
   # need pytest's builtin fixture cache object
   pytest_cache_path = cache._cachedir
-  # the corpus has 45 chars; use 60 as threshold to test saving "merged bytes" behavior
   corpus = "Hello, world! There's no stop _in word! ^&*)()%$#@!~`'\";:/?.>,<\\|-_=+\t\n"
   t = CharTokenizer()
   t.train(corpus)
