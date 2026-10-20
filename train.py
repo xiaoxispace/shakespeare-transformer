@@ -180,7 +180,7 @@ if __name__ == "__main__":
   with open(dataset_path, 'r', encoding='utf-8') as file:
     raw_tokens = file.read()
   token_ids = tokenizer.encode(raw_tokens)
-  token_sequence = torch.tensor(token_ids).to(torch.long)[:3000]
+  token_sequence = torch.tensor(token_ids).to(torch.long)
   train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
   print("Dataset loader ready.")
 
