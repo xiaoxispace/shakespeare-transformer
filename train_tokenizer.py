@@ -92,8 +92,7 @@ def main():
   corpus_path = PLAT_TEXT_OUTPUT_PATH
   corpus = load_corpus(corpus_path)
 
-  tokenizer_name = config["tokenizer"]
-  tokenizer = create_tokenizer(tokenizer_name, **config)
+  tokenizer = create_tokenizer(**config)
   tokenizer.train(corpus)
   tokenizer_data_path = decide_tokenizer_data_path(tokenizer_name)
   tokenizer.save(tokenizer_data_path)
