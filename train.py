@@ -12,7 +12,7 @@ from tqdm import tqdm
 from dataset import prepare_dataset_loader
 from hyperparams import config
 from models.transformer import Transformer
-from utils.model_utils import make_model_saver
+from utils.model_utils import make_model_saver, extract_model_config
 from utils.tokenizer_utils import load_tokenizer
 from utils.wandb_utils import setup_wandb
 
@@ -184,13 +184,14 @@ if __name__ == "__main__":
   train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
   print("Dataset loader ready.")
 
+  model = Transformer(**extract_model_config(config)).to(device)
   config_display = {k: str(v) for k, v in config.items()}
-  print("CUDA available: ", torch.cuda.is_available())
+  print("Model trainable parameters: ", model.count_trainable_parameters())
+  print(f"Mixed precision enabled: {use_bf16}")
   print("CUDA device count: ", torch.cuda.device_count())
+  print("CUDA available: ", torch.cuda.is_available())
   print("Config: ", json.dumps(config_display, indent=2))
   print("Epochs: ", epochs)
-  print(f"Mixed precision training enabled: {use_bf16}")
-  model = Transformer(**config).to(device)
 
   criterion = nn.CrossEntropyLoss()
   optimizer = optim.Adam(model.parameters(), lr=learning_rate)

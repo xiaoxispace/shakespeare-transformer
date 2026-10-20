@@ -21,7 +21,7 @@ MODEL_PARAMETERS = (
 
 
 def extract_model_config(config):
-  model_config = copy.deepcopy(config)
+  model_config = {}
   for k, v in config.items():
     if k in MODEL_PARAMETERS:
       model_config[k] = v
