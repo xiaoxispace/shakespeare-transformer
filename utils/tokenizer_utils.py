@@ -2,16 +2,19 @@ import json
 
 from pathlib import Path
 
-from data_config import BPE_TOKENIZER_DATA_PATH, CHAR_TOKENIZER_DATA_PATH, TOKENIZER_CONFIG_FILE_NAME
+from data_config import TOKENIZER_DATA_PATH, TOKENIZER_CONFIG_FILE_NAME
 from tokenizers.char_tokenizer import CharTokenizer
 from tokenizers.bpe_tokenizer import BPETokenizer
 
 
-def decide_tokenizer_data_path(tokenizer):
+def decide_tokenizer_data_path(tokenizer_config, prefix=TOKENIZER_DATA_PATH, dataset='default'):
+  tokenizer = tokenizer_config["tokenizer"]
+  prefix = Path(prefix)
   if tokenizer == "char":
-    return CHAR_TOKENIZER_DATA_PATH
+    return prefix / (tokenizer + "_" + dataset)
   elif tokenizer == "bpe":
-    return BPE_TOKENIZER_DATA_PATH
+    thresh = tokenizer_config["threshold"]
+    return prefix / (tokenizer + "_" + dataset + "_" + f"threshold{thresh}")
 
 
 def extract_tokenizer_config(config):
