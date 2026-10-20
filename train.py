@@ -14,6 +14,7 @@ from hyperparams import config
 from models.transformer import Transformer
 from utils.model_utils import make_model_saver
 from utils.tokenizer_utils import load_tokenizer
+from utils.wandb_utils import setup_wandb
 
 
 def train(
@@ -35,6 +36,7 @@ def train(
   epoch_sequence = []
 
   min_val_loss = torch.inf
+  min_val_loss_epoch = 0
   model_of_min_val_loss = None
   best_model_path = None
 
@@ -127,7 +129,7 @@ def train(
       best_model_path, _ = save_model_fn(model_of_min_val_loss, min_val_loss_epoch, is_best_model=True)
       print(f"  Latest best model saved to {best_model_path}")
 
-  if model_of_min_val_loss:
+  if model_of_min_val_loss and best_model_path:
     print(f"Model with lowest validation loss achieved at epoch {min_val_loss_epoch}.")
     print(f"Best model name: {best_model_path.name}")
 
@@ -140,7 +142,6 @@ if __name__ == "__main__":
                   prog='shakespeare-training',
                   description='pretrain shakespeare transformer')
   parser.add_argument('-e', '--epochs', default=100, type=int)
-  parser.add_argument('-t', '--tokenizer', choices=["char", "bpe"], default='char')
   parser.add_argument('--tokenizer-path', type=str)
   parser.add_argument('--dataset-path', type=str)
   parser.add_argument('--enable-wandb', action='store_true')
@@ -148,7 +149,6 @@ if __name__ == "__main__":
 
   args = parser.parse_args()
   epochs = args.epochs
-  tokenizer_name = args.tokenizer
   tokenizer_path = args.tokenizer_path
   dataset_path = args.dataset_path
   enable_wandb = args.enable_wandb
@@ -159,64 +159,37 @@ if __name__ == "__main__":
 
   block_size = config['block_size']
   batch_size = config['batch_size']
-  decoder_only = config['decoder_only']
-  num_of_encoder_layers = config['num_of_encoder_layers']
-  num_of_decoder_layers = config['num_of_decoder_layers']
-  num_of_heads = config['num_of_heads']
-  dmodel = config['dmodel']
-  dropout = config['dropout']
-  learning_rate = config['learning_rate']
-  device = config['device']
+
+  learning_rate = config["learning_rate"]
+  device = config["device"]
   use_bf16 = (
     enable_mixed_precision
     and device == "cuda"
     and torch.cuda.is_bf16_supported()
   )
 
-  if enable_wandb:
-    wandb.init(
-      project="shakespeare-transformer",
-      config={
-        "learning_rate": learning_rate, 
-        "architecture": "Shakespear's transformer",
-        "dataset": "Shakespeare",
-        "epochs": epochs,
-        "batch_size": batch_size,
-        "block_size": block_size,
-        "dmodel": dmodel,
-        "dropout": dropout,
-        "use_bf16_mixed": use_bf16,
-        "tokenizer": tokenizer_name
-      }
-    )
-    run_name = wandb.run.name
-  else:
-    print("Disable wandb")
-    wandb.init(mode="disabled")
-    run_name = None
+  run_name = setup_wandb(config, enable_wandb)
 
-  config_display = {k: str(v) for k, v in config.items()}
   print("Hello World!")
-  print("CUDA available: ", torch.cuda.is_available())
-  print("CUDA device count: ", torch.cuda.device_count())
-  print("Config: ", json.dumps(config_display, indent=2))
-  print("Epochs: ", epochs)
-  print(f"Mixed precision training enabled: {use_bf16}")
-
-  print(f"Loading {tokenizer_name} tokenizer ...")
-  tokenizer = load_tokenizer(tokenizer_name, tokenizer_path)
-  vocab_size = tokenizer.vocab_size
-  config["vocab_size"] = vocab_size
+  print(f"Loading tokenizer from path {tokenizer_path} ...")
+  tokenizer = load_tokenizer(tokenizer_path)
+  config["vocab_size"] = tokenizer.vocab_size
   print("Loading tokenizer done.")
 
   print("Preparing dataset loader ...")
   with open(dataset_path, 'r', encoding='utf-8') as file:
     raw_tokens = file.read()
   token_ids = tokenizer.encode(raw_tokens)
-  token_sequence = torch.tensor(token_ids).to(torch.long)
+  token_sequence = torch.tensor(token_ids).to(torch.long)[:3000]
   train_loader, val_loader, test_loader = prepare_dataset_loader(token_sequence, block_size, batch_size, train_end, val_end)
   print("Dataset loader ready.")
 
+  config_display = {k: str(v) for k, v in config.items()}
+  print("CUDA available: ", torch.cuda.is_available())
+  print("CUDA device count: ", torch.cuda.device_count())
+  print("Config: ", json.dumps(config_display, indent=2))
+  print("Epochs: ", epochs)
+  print(f"Mixed precision training enabled: {use_bf16}")
   model = Transformer(**config).to(device)
 
   criterion = nn.CrossEntropyLoss()
@@ -232,5 +205,3 @@ if __name__ == "__main__":
     device=device,
     use_bf16=use_bf16
   )
-
-
