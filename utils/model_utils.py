@@ -92,7 +92,7 @@ def load_model(model_path, config='config.json', tokenizer_path="tokenizer"):
 
   tokenizer = load_tokenizer(tokenizer_path)
 
-  model = Transformer(**config)
+  model = Transformer(**extract_model_config(config))
   model.load_state_dict(torch.load(model_path))
 
   return model, tokenizer, config
