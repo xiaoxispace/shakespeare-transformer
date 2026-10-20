@@ -28,7 +28,10 @@ class BPETokenizer(TokenizerABC):
 
   def __init__(self, threshold):
     self.threshold = threshold
-    self.config = {"threshold": threshold}
+    self.config = {
+      "tokenizer": "bpe",
+      "threshold": threshold
+    }
     self.vocab_to_ind = None
     self.ind_to_vocab = None  # lazy evaluation
     self.merges = None

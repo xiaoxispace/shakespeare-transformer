@@ -4,7 +4,7 @@ import torch
 from collections import Counter
 from pathlib import Path
 
-from data_config import TOKENIZER_VOCAB_TO_IND_FILE_NAME
+from data_config import TOKENIZER_VOCAB_TO_IND_FILE_NAME, TOKENIZER_CONFIG_FILE_NAME
 from tokenizers.tokenizer_abc import TokenizerABC
 
 
@@ -13,6 +13,7 @@ class CharTokenizer(TokenizerABC):
     super(CharTokenizer).__init__()
     self.vocab_to_ind = None
     self.ind_to_vocab = None
+    self.config = {"tokenizer": "char"}
 
   def train(self, corpus, **kwargs):
     raw_tokens = self._tokenize_play(corpus)
@@ -41,6 +42,9 @@ class CharTokenizer(TokenizerABC):
     vocab_to_ind_path = path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
     with open(vocab_to_ind_path, "w", encoding="utf-8") as file:
       json.dump(self.vocab_to_ind, file, indent=4)
+    config_path = path / TOKENIZER_CONFIG_FILE_NAME
+    with open(config_path, "w", encoding="utf-8") as file:
+      json.dump(self.config, file, indent=4)
 
   @classmethod
   def load(cls, path):
@@ -48,8 +52,13 @@ class CharTokenizer(TokenizerABC):
     vocab_to_ind_path = path / TOKENIZER_VOCAB_TO_IND_FILE_NAME
     with open(vocab_to_ind_path, "r", encoding="utf-8") as file:
       vocab_to_ind = json.load(file)
+    config_path = path / TOKENIZER_CONFIG_FILE_NAME
+    with open(config_path, "r", encoding="utf-8") as file:
+      config = json.load(file)
+
     t = cls()
     t.vocab_to_ind = vocab_to_ind
+    t.config = config
     return t
 
   @property

@@ -28,6 +28,7 @@ def test_char_save_and_load(cache):
   loaded_t = CharTokenizer.load(temp_path)
   assert t.vocab_size == loaded_t.vocab_size
   assert t.vocab_to_ind == loaded_t.vocab_to_ind
+  assert t.config == loaded_t.config
 
 
 @pytest.mark.skip

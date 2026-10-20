@@ -6,14 +6,13 @@ class TokenizerABC(ABC):
   def train(self, corpus, **kwargs):
     pass
 
-  @classmethod
   @abstractmethod
   def save(self, path):
     pass
 
   @classmethod
   @abstractmethod
-  def load(self, path):
+  def load(cls, path):
     pass
 
   @abstractmethod
