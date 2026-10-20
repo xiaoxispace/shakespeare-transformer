@@ -11,8 +11,8 @@ from tokenizers.tokenizer_abc import TokenizerABC
 class CharTokenizer(TokenizerABC):
   def __init__(self):
     super(CharTokenizer).__init__()
-    self.vocab_to_ind = None
-    self.ind_to_vocab = None
+    self.vocab_to_ind = {}
+    self.ind_to_vocab = {}
     self.config = {"tokenizer": "char"}
 
   def train(self, corpus, **kwargs):

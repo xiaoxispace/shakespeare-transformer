@@ -32,9 +32,9 @@ class BPETokenizer(TokenizerABC):
       "tokenizer": "bpe",
       "threshold": threshold
     }
-    self.vocab_to_ind = None
-    self.ind_to_vocab = None  # lazy evaluation
-    self.merges = None
+    self.vocab_to_ind = {}
+    self.ind_to_vocab = {}  # lazy evaluation
+    self.merges = []
 
   def _pretokenize(self, corpus: bytes) -> list[bytes]:
     """
