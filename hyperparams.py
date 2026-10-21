@@ -17,6 +17,8 @@ config = {
   "device": "cuda" if torch.cuda.is_available() else "cpu",
   "learning_rate": 3e-5,
   # tokenizer parameters
-  "tokenizer": "char",
-  "bpe_vocab_threshold": 300
+  "tokenizer": "bpe",
+  "bpe_vocab_threshold": 300,
+  # dataset parameters
+  "dataset": "shakespeare"
 }

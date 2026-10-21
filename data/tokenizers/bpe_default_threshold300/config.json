@@ -1,3 +1,4 @@
 {
+    "tokenizer": "bpe",
     "threshold": 300
 }

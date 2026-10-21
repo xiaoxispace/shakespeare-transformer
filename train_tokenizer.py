@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 from data_config import PLAT_TEXT_OUTPUT_PATH
 from hyperparams import config
-from utils.tokenizer_utils import create_tokenizer, decide_tokenizer_data_path
+from utils.tokenizer_utils import create_tokenizer, decide_tokenizer_data_path, extract_tokenizer_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("tokenizer")
@@ -92,10 +92,10 @@ def main():
   corpus_path = PLAT_TEXT_OUTPUT_PATH
   corpus = load_corpus(corpus_path)
 
-  tokenizer_name = config["tokenizer"]
-  tokenizer = create_tokenizer(tokenizer_name, **config)
+  tokenizer_config = extract_tokenizer_config(config)
+  tokenizer = create_tokenizer(tokenizer_config)
   tokenizer.train(corpus)
-  tokenizer_data_path = decide_tokenizer_data_path(tokenizer_name)
+  tokenizer_data_path = decide_tokenizer_data_path(tokenizer_config)
   tokenizer.save(tokenizer_data_path)
 
   # token_ids = tokenizer.encode(corpus)
