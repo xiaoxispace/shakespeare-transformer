@@ -1,4 +1,6 @@
-# Shakespeare-transformer
+# Transformer Playground
+
+A playground for people interested in transformers to experiment. 
 
 # Example output
 
