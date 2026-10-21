@@ -2,19 +2,6 @@
 
 # Example output
 
-Hyper parameters:
-
-```
-epoch = 100
-block_size = 64
-batch_size = 256
-dmodel = 256 
-learning_rate = 0.00001
-cuda_available = torch.cuda.is_available()
-num_of_encoder_layers = 3
-num_of_heads = 4
-decoder_only = True
-```
 
 ```
 (shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transformer$ python eval.py -m "data/model-final.pth"
@@ -68,8 +55,30 @@ And yet forgive shine own part. Therefore.
 
 ULYSSES
 That feather they offerent Caesar. I shall
-Believe me soon pla(shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transformer$ 
+Believe me soon pla
 ```
+
+<details>
+  <summary>Training Hyperparameters</summary>
+  The hyperparameters used for the model generating the above outputs are:
+
+  ```
+  epoch = 100
+  block_size = 64
+  batch_size = 256
+  dmodel = 256 
+  learning_rate = 0.00001
+  cuda_available = torch.cuda.is_available()
+  num_of_encoder_layers = 3
+  num_of_heads = 4
+  decoder_only = True
+  ```
+
+</details>
+
+Note: 
+- The model generating the example output is not saved as one of the checkpoints. A similar checkpoint can be found under `checkpoints/ctx64`, where the learning rate is by default, `0.0003`.
+- The model output was truncated by length, as to keep the simplicity, tokenizer does not include any of the special tokens such as `BOS` (the beginning of a sequence), `EOS` (end of sequence), `UNK` unknown token, etc.
 
 # Setup
 
@@ -105,6 +114,54 @@ Believe me soon pla(shakespeare) ubuntu@193-122-144-209:~/dev/shakespeare-transf
     - To evaluate model on the test dataset, run `python eval.py -m <path to the model>`
     - To genearate response, run `python gen.py -m <path to the model>`
 
+## Default Parameters
+
+The default parameters is as follows. Note that `bpe_vocab_threshold` is only valid when `tokenizer` is `bpe`. 
+<details>
+  <summary>Hyperparameters Specification</summary>
+
+  ```python
+  config = {
+    # model parameters
+    "block_size": 256,
+    "dmodel": 256,
+    "dropout": 0.1,
+    "num_of_decoder_layers": 3,
+    "num_of_encoder_layers": 3,
+    "num_of_heads": 4,
+    "decoder_only": True,
+    # training parameters
+    "batch_size": 256,
+    "cuda_available": torch.cuda.is_available(),
+    "device": "cuda" if torch.cuda.is_available() else "cpu",
+    "learning_rate": 3e-4,
+    # tokenizer parameters
+    "tokenizer": "char",
+    "bpe_vocab_threshold": 500,
+    # dataset parameters
+    "dataset": "shakespeare"
+  }
+  ```
+</details>
+
+## Tokenizer Storage
+
+By default, each tokenizer is stored with two files `config.json` and `vocab_to_ind.json` under `data/tokenizers` directory such that:
+- `config.json`: records the basic configuration of the tokenizer.
+- `vocab_to_ind.json`: maps from each token to its token index. 
+
+If additional files are required to define the tokenizer, they will be stored together with the above two files.
+
+## Checkpoints Storage
+
+Checkpoints are stored under `checkpoints`.
+
+If model parameters differ in the checkpoint, it will be noted by the checkpoint directory name. For example, `ctx64-dmodel128-lr1e-3` suggests the following updates to the above default parameters:
+- `block_size`: set to 64
+- `dmodel`: set to 128
+- `learning_rate`: set to 1e-3
+
+Similarly, `ctx64-dcdr1` suggests the model context (`block_size`) is 64, the number of decoder layers (`dcdr`) is 1. `bpe-ctx64-500threshold` suggests BPE tokenizer is used with 500 threshold and the model context is 64.
 
 # Unittests
 
