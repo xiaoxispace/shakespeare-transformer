@@ -1,11 +1,7 @@
 {
   "block_size": 384,
-  "batch_size": 256,
   "dmodel": 256,
-  "learning_rate": 0.0003,
-  "cuda_available": true,
   "dropout": 0.1,
-  "device": "cuda",
   "num_of_decoder_layers": 3,
   "num_of_encoder_layers": 3,
   "num_of_heads": 4,
