@@ -2,6 +2,45 @@ import pytest
 
 from tokenizers.char_tokenizer import CharTokenizer
 from tokenizers.bpe_tokenizer import BPETokenizer
+from utils.tokenizer_utils import create_tokenizer, load_tokenizer
+
+def test_create_tokenizer():
+  char_config = {"tokenizer": "char"}
+  bpe_config = {"tokenizer": "bpe", "threshold": 10}
+
+  t = create_tokenizer(char_config)
+  assert isinstance(t, CharTokenizer)
+
+  t = create_tokenizer(bpe_config)
+  assert isinstance(t, BPETokenizer)
+
+
+def test_load_tokenizer(cache):
+  # need pytest's builtin fixture cache object
+  pytest_cache_path = cache._cachedir
+  corpus = "This is a very long and profoundly philosophical sentence."
+  char_config = {"tokenizer": "char"}
+  bpe_config = {"tokenizer": "bpe", "threshold": 10}
+  c_t = create_tokenizer(char_config)
+  bpe_t = create_tokenizer(bpe_config)
+  c_t.train(corpus)
+  bpe_t.train(corpus)
+
+  c_t_dir = "c_t-load-test"
+  c_t_path = pytest_cache_path / c_t_dir
+  c_t.save(c_t_path)
+  bpe_t_dir = "bpe_t-load-test"
+  bpe_t_path = pytest_cache_path / bpe_t_dir
+  bpe_t.save(bpe_t_path)
+
+  loaded_c_t = load_tokenizer(c_t_path)
+  loaded_bpe_t = load_tokenizer(bpe_t_path)
+
+  assert loaded_c_t.config == c_t.config
+  assert loaded_c_t.vocab_to_ind == c_t.vocab_to_ind
+  assert loaded_bpe_t.config == bpe_t.config
+  assert loaded_bpe_t.vocab_to_ind == bpe_t.vocab_to_ind
+  assert loaded_bpe_t.merges == bpe_t.merges
 
 
 def test_char_tokenizer():
@@ -22,12 +61,13 @@ def test_char_save_and_load(cache):
   corpus = "Hello, world! There's no stop _in word! ^&*)()%$#@!~`'\";:/?.>,<\\|-_=+\t\n"
   t = CharTokenizer()
   t.train(corpus)
-  bpe_tokenizer_save_test_path = "char-save-test"
-  temp_path = pytest_cache_path / bpe_tokenizer_save_test_path
+  char_tokenizer_save_test_path = "char-save-test"
+  temp_path = pytest_cache_path / char_tokenizer_save_test_path
   t.save(temp_path)
   loaded_t = CharTokenizer.load(temp_path)
   assert t.vocab_size == loaded_t.vocab_size
   assert t.vocab_to_ind == loaded_t.vocab_to_ind
+  assert t.config == loaded_t.config
 
 
 @pytest.mark.skip

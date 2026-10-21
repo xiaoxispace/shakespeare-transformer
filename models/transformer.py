@@ -74,8 +74,7 @@ class Transformer(nn.Module):
         num_of_encoder_layers=6, 
         num_of_decoder_layers=6,
         num_of_heads=8,
-        decoder_only=False,
-        **kwargs
+        decoder_only=False
       ):
         super(Transformer, self).__init__()
         self.dmodel = dmodel 
@@ -139,3 +138,11 @@ class Transformer(nn.Module):
               y = layer(x, None)
 
           return self.fully_connected(y) 
+
+    def count_trainable_parameters(self, unique=False):
+      if unique:
+        # Handles weight-tying by checking internal memory pointers (data_ptr)
+        unique_params = {p.data_ptr(): p.numel() for p in self.parameters() if p.requires_grad}
+        return sum(unique_params.values())
+
+      return sum(p.numel() for p in self.parameters() if p.requires_grad)

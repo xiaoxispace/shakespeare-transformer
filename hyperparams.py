@@ -18,5 +18,7 @@ config = {
   "learning_rate": 3e-4,
   # tokenizer parameters
   "tokenizer": "bpe",
-  "bpe_vocab_threshold": 300
+  "bpe_vocab_threshold": 300,
+  # dataset parameters
+  "dataset": "shakespeare"
 }

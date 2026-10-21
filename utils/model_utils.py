@@ -1,11 +1,32 @@
+import copy
 import torch
 import json
-import os
 
 from pathlib import Path
 
 from models.transformer import Transformer
 from utils.tokenizer_utils import load_tokenizer
+
+
+MODEL_PARAMETERS = (
+  "vocab_size",
+  "block_size",
+  "dropout",
+  "dmodel",
+  "num_of_encoder_layers", 
+  "num_of_decoder_layers",
+  "num_of_heads",
+  "decoder_only",
+)
+
+
+def extract_model_config(config):
+  model_config = {}
+  for k, v in config.items():
+    if k in MODEL_PARAMETERS:
+      model_config[k] = v
+
+  return model_config
 
 
 def make_model_saver(config, tokenizer, run_name=None, save_dir="checkpoints", tokenizer_subpath="tokenizer"):
@@ -69,10 +90,9 @@ def load_model(model_path, config='config.json', tokenizer_path="tokenizer"):
   with open(config_path, "r", encoding="utf-8") as file:
     config = json.load(file)
 
-  tokenizer_name = config["tokenizer"]
-  tokenizer = load_tokenizer(tokenizer_name, tokenizer_path)
+  tokenizer = load_tokenizer(tokenizer_path)
 
-  model = Transformer(**config)
+  model = Transformer(**extract_model_config(config))
   model.load_state_dict(torch.load(model_path))
 
   return model, tokenizer, config
