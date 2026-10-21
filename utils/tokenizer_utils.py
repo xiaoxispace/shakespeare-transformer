@@ -1,26 +1,53 @@
-import torch
+import json
 
-from data_config import BPE_TOKENIZER_DATA_PATH, CHAR_TOKENIZER_DATA_PATH
+from pathlib import Path
+
+from data_config import TOKENIZER_DATA_PATH, TOKENIZER_CONFIG_FILE_NAME
 from tokenizers.char_tokenizer import CharTokenizer
 from tokenizers.bpe_tokenizer import BPETokenizer
 
 
-def decide_tokenizer_data_path(tokenizer):
+def decide_tokenizer_data_path(tokenizer_config, prefix=TOKENIZER_DATA_PATH, dataset='default'):
+  tokenizer = tokenizer_config["tokenizer"]
+  prefix = Path(prefix)
   if tokenizer == "char":
-    return CHAR_TOKENIZER_DATA_PATH
+    return prefix / (tokenizer + "_" + dataset)
   elif tokenizer == "bpe":
-    return BPE_TOKENIZER_DATA_PATH
+    thresh = tokenizer_config["threshold"]
+    return prefix / (tokenizer + "_" + dataset + "_" + f"threshold{thresh}")
 
 
-def create_tokenizer(tokenizer_name, **kwargs):
+def extract_tokenizer_config(config):
+  """Convert general training interface config into tokenizer config"""
+  t_name = config["tokenizer"]
+  t_config = {
+    "tokenizer": config["tokenizer"]
+  }
+
+  if t_name == 'bpe':
+    t_config["threshold"] = config["bpe_vocab_threshold"]
+
+  return t_config
+
+
+def create_tokenizer(config):
+  tokenizer_name = config["tokenizer"]
   if tokenizer_name == "char":
     return CharTokenizer()
   elif tokenizer_name == "bpe":
-    return BPETokenizer(threshold=kwargs["bpe_vocab_threshold"])
+    return BPETokenizer(threshold=config["threshold"])
+  raise ValueError(f"Unknown tokenizer: {tokenizer_name}")
 
 
-def load_tokenizer(tokenizer_name, tokenizer_path):
+def load_tokenizer(tokenizer_path):
+  tokenizer_path = Path(tokenizer_path)
+  tokenizer_config_path = tokenizer_path / TOKENIZER_CONFIG_FILE_NAME
+  with open(tokenizer_config_path, "r", encoding="utf-8") as file:
+    tokenizer_config = json.load(file)
+  tokenizer_name = tokenizer_config["tokenizer"]
+
   if tokenizer_name == "char":
     return CharTokenizer.load(tokenizer_path)
   elif tokenizer_name == "bpe":
     return BPETokenizer.load(tokenizer_path)
+  raise ValueError(f"Unknown tokenizer: {tokenizer_name}")

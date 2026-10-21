@@ -12,5 +12,4 @@ DATASETS_DIR = Path("data/datasets")
 TOKENIZER_VOCAB_TO_IND_FILE_NAME = "vocab_to_ind.json"
 TOKENIZER_CONFIG_FILE_NAME = "config.json"
 
-CHAR_TOKENIZER_DATA_PATH = Path("data/char_tokenizer")
-BPE_TOKENIZER_DATA_PATH = Path("data/bpe_tokenizer")
+TOKENIZER_DATA_PATH = Path("data/tokenizers")

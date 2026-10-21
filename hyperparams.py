@@ -15,8 +15,10 @@ config = {
   # training parameters
   "cuda_available": torch.cuda.is_available(),
   "device": "cuda" if torch.cuda.is_available() else "cpu",
-  "learning_rate": 3e-4,
+  "learning_rate": 3e-5,
   # tokenizer parameters
   "tokenizer": "bpe",
-  "bpe_vocab_threshold": 500
+  "bpe_vocab_threshold": 500,
+  # dataset parameters
+  "dataset": "shakespeare"
 }
