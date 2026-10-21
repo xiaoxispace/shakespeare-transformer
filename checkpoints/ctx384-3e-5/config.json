@@ -1,0 +1,16 @@
+{
+  "block_size": 384,
+  "batch_size": 256,
+  "dmodel": 256,
+  "dropout": 0.1,
+  "num_of_decoder_layers": 3,
+  "num_of_encoder_layers": 3,
+  "num_of_heads": 4,
+  "decoder_only": true,
+  "cuda_available": true,
+  "device": "cuda",
+  "learning_rate": 3e-05,
+  "tokenizer": "char",
+  "bpe_vocab_threshold": 300,
+  "vocab_size": 83
+}
